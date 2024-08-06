@@ -13,7 +13,6 @@ cloudinary.v2.config({  // cloudnary login
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-
 app.listen(port,async()=>{
     await dbCon();
     console.log(`server placed on ${port} successfully`)

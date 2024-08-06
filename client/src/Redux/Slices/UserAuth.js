@@ -1,11 +1,10 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, isRejectedWithValue } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import axiosinstance from "../../helper/ServerConnection";
 
 const initialState={
     // getting all items from localStorage//DB
     isLoggedIn: localStorage.getItem('isLoggedIn') || false,
-    role: localStorage.getItem('role') || false,
     data: (localStorage.getItem('data') === 'undefined') ? {} : JSON.parse(localStorage.getItem('data'))  //.parse -> convert object to json
 };
 
@@ -16,13 +15,14 @@ try{
  toast.promise(res,{
     loading:"wait! creating your account",
     success:(data)=>{ return data?.data?.message},
-    error:(data)=>{ return data?.data?.message} , 
+    error:(data)=>{ return data?.data?.message}    
  })
+ console.log(res)
  return (await res).data;
 
 }
 catch(error){
-toast.error('Somthing went wrong!')
+toast.error('Somthing went wrong!');
 }
 })
 
@@ -32,13 +32,15 @@ export const login = createAsyncThunk('/auth/login',async(data)=>{
      toast.promise(res,{
         loading:"wait! authentication on progress...",
         success:(data)=>{ return data?.data?.message},
-        error:(data)=>{ return data?.data?.message}, 
+        error:(data)=>{ return data?.data?.message} 
      })
+     console.log(res)
      return (await res).data;
     
     }
     catch(err){
-      toast.error(err?.response?.data?.message)
+      toast.error("login failed")
+      return isRejectedWithValue(err?.message);
     }
     })
 
@@ -49,13 +51,13 @@ export const login = createAsyncThunk('/auth/login',async(data)=>{
          toast.promise(res,{
             loading:"wait! logout in progress...",
             success:(data)=>{ return data?.data?.message},
-            error: (data)=>{ return data?.data?.message},
+            error: "Failed to logout",
          })
-         
+         console.log(res?.data?.message)
          return (await res).data;
         }
-        catch(e){           
-        toast.error(e?.response?.data?.message)
+        catch(err){           
+        toast.error("Failed to logout")
        
         }
         })
@@ -67,29 +69,29 @@ export const login = createAsyncThunk('/auth/login',async(data)=>{
              toast.promise(res,{
                 loading:"wait! profile update in progress...",
                 success:(data)=>{ return data?.data?.message},
-                error:(data)=>{ return data?.data?.message}
+                error:"Failed to update profile"
              }) 
+             console.log(res?.data?.message)
              return (await res).data;
             }
-            catch(e){     
-            // toast.error("Failed to update user Profile")
-            console.log(e)
+            catch(error){     
+            toast.error(error?.message)
             }
             })
 
  export const getUserProfile = createAsyncThunk('/user/profile',async()=>{
                 try{
-                 const res = axiosinstance.post('user/me');
+                 const res = await axiosinstance.post('user/me');
                  toast.promise(res,{
                   loading:"wait! profile is loading...",
                   success:(data)=>{ return data?.data?.message},
-                  error:(data)=>{ return data?.data?.message}
-               })  
+                  error:"Failed to get profile"
+               }) 
+               console.log(res?.data?.message) 
                  return (await res).data;
                 }
                 catch(e){    
-               //  toast.error(e?.response?.data?.message)
-               console.log(e)
+                toast.error(e?.response?.data?.message)
                 }
                 }) ;
                 
@@ -101,6 +103,7 @@ export const login = createAsyncThunk('/auth/login',async(data)=>{
       success:(data)=>{ return data?.data?.message},
       error: 'Failed to change password'
    })
+   console.log(res?.data?.message)
    return (await res).data
       
    } catch (error) {
@@ -110,13 +113,13 @@ export const login = createAsyncThunk('/auth/login',async(data)=>{
 
   export const forgetPassword = createAsyncThunk('/auth/forgetPassword',async(email)=>{
    try {
-     const res =  axiosinstance.post('/user/forget',email);
-
+     const res = axiosinstance.post('/user/forget',email);
      toast.promise(res,{
       loading:"wait! loading...",
       success:(data)=>{ return data?.data?.message},
       error: 'Failed to send verification link'
    })
+   console.log(res?.data?.message)
    return (await res).data
       
    } catch (error) {
@@ -140,8 +143,7 @@ export const login = createAsyncThunk('/auth/login',async(data)=>{
   });
 
   
-  
-    
+   
 
 //create slice
 const AuthSlice = createSlice({
@@ -153,24 +155,19 @@ const AuthSlice = createSlice({
         .addCase(login.fulfilled,(state,action) => {
           localStorage.setItem("data",JSON.stringify(action?.payload?.data));
           localStorage.setItem("isLoggedIn",true);
-          localStorage.setItem("role",action?.payload?.data?.role);  
           state.isLoggedIn = true;
           state.data = action?.payload?.data;
-          state.role = action?.payload?.data.role;
         })
         .addCase(logout.fulfilled,(state)=>{
             localStorage.clear();
             state.isLoggedIn = false;
             state.data = {};
-            state.role = '';
         })
         .addCase(getUserProfile.fulfilled,(state,action) => {         
             localStorage.setItem("data",JSON.stringify(action?.payload?.user));
-            localStorage.setItem("isLoggedIn",true);
-            localStorage.setItem("role",action?.payload?.user?.role);  
+            localStorage.setItem("isLoggedIn",true); 
             state.isLoggedIn = true;
             state.data = action?.payload?.user;
-            state.role = action?.payload?.user.role;
           })
     }
 });

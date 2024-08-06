@@ -1,10 +1,8 @@
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto') // for generet random token
-const JWT=require('jsonwebtoken');
 const dotenv = require('dotenv')
 dotenv.config();
-const mongoose=require('mongoose');
-// const{Schema}=mongoose;
+const mongoose= require('mongoose');
+// const{Schema}= mongoose;
 
 const mySchema = new mongoose.Schema({
     fullname:{
@@ -26,7 +24,7 @@ const mySchema = new mongoose.Schema({
         type:String,
         required:[true,'password must required'],
         minLength:[5,"Name must be min 5 charecter"],
-        select:false, // psw to seen to admin
+        select:false, // psw not seen to admin
         // match:[/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/,
         //         "please enter valid password"]
     },
@@ -38,17 +36,8 @@ const mySchema = new mongoose.Schema({
            type:String
         }
     },
-    role:{
-        type:String,
-        enum:['USER','ADMIN'],
-        default:'USER' // Bydefault treat as normal user
-    },
     forgetPasswordToken: String,
     forgetPasswordExpiry: Date,
-    subscribtion:{
-        id : String,
-        status : String
-    }
 },
 {timestamps:true}
 );
@@ -56,12 +45,12 @@ const mySchema = new mongoose.Schema({
 // Hashes password before saving to the database
 mySchema.pre("save",async function(next){
     if(!this.isModified('password')){
-        return next()
+        return next();
     }
     this.password= await bcrypt.hash(this.password,10);
 });
 
-  const userSchema=mongoose.model('users',mySchema) // specified collection name 
+const userSchema = mongoose.model('users',mySchema) // specified collection name 
   
-  module.exports=userSchema;
+  module.exports = userSchema;
 

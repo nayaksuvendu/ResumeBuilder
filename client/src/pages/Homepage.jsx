@@ -4,10 +4,12 @@ import HomePageImage from '../assets/image/hero.svg'
 import { Link } from 'react-router-dom'
 import typed from 'typed.js'
 import HomeLayout from '../layouts/HomeLayout'
+import { useSelector } from 'react-redux'
 <link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Crimson+Pro"></link>
 
 function Homepage() {
+    const isLoggedIn = useSelector((state)=> state?.auth?.isLoggedIn);
     useEffect(()=>{
         new typed('#typed-text',{
             strings:['Resumegen is a tool that often constitutes an automated process in which you follow a template and input your information.',
@@ -31,18 +33,18 @@ function Homepage() {
                     </p>
 
                     <div className="space-x-5">
-                        <Link to="/courses">
+                      {isLoggedIn === true ? ( <Link to="/resume">
                             <button className="bg-purple-500 px-5 py-3 rounded-md font-semibold text-lg cursor-pointer hover:bg-purple-600 transition-all ease-in-out duration-300">
                             Build Resume
                             </button>
-                        </Link>
-
-                        {/* <Link to="/contactUs">
-                            <button className=" sm:mt-3 border border-yellow-500 px-5 py-3 rounded-md font-semibold text-lg cursor-pointer hover:bg-yellow-500 transition-all ease-in-out duration-300 ">
-                                Contact Us
+                        </Link>):( <Link to="/login">
+                            <button className="bg-purple-500 px-5 py-3 rounded-md font-semibold text-lg cursor-pointer hover:bg-purple-600 transition-all ease-in-out duration-300">
+                            Build Resume
                             </button>
-                        </Link> */}
-                    </div>
+                        </Link>)}
+
+                         
+                    </div> 
                 </div>
                 
                 <div className="w-1/2 flex items-center justify-center overflow-hidden">
